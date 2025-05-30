@@ -34,45 +34,44 @@ class Game extends JPanel {
 
         map = new Map(mapName);
         // use robotFileNames to create robots
-       
-            try {
-               
 
-                // Use the passed robotFileNames
-                for (String className : robotFileNames) {
-                    int encodedSpawnLocation = smartSpawn();
-                    if (encodedSpawnLocation == -1) {
-                        System.err.println(
-                                "Could not find a valid spawn location for " + className + ". Skipping robot.");
-                        continue;
-                    }
+        try {
 
-                    int numCols = (this.map.getTiles() != null && this.map.getTiles().length > 0)
-                            ? this.map.getTiles()[0].length
-                            : 0;
-                    if (numCols == 0) {
-                        System.err.println("Map has no columns. Cannot place robot " + className);
-                        continue;
-                    }
-                    int spawnRow = encodedSpawnLocation / numCols;
-                    int spawnCol = encodedSpawnLocation % numCols;
-
-                    int robotSpawnX = spawnCol * Utilities.TILE_SIZE;
-                    int robotSpawnY = spawnRow * Utilities.TILE_SIZE;
-                    Robot robot = Utilities.createRobot(robotSpawnX, robotSpawnY, className);
-                    if (robot != null) {
-                        robots.add(robot);
-                        System.out.println("Added robot: " + className + " at (" + spawnCol + "," + spawnRow + ")");
-                    } else {
-                        System.err.println("Failed to create robot from class: " + className);
-                    }
-
+            // Use the passed robotFileNames
+            for (String className : robotFileNames) {
+                int encodedSpawnLocation = smartSpawn();
+                if (encodedSpawnLocation == -1) {
+                    System.err.println(
+                            "Could not find a valid spawn location for " + className + ". Skipping robot.");
+                    continue;
                 }
-                // classLoader.close(); // Consider if/when to close
-            } catch (Exception e) {
-                System.err.println("Failed to initialize URLClassLoader for robots directory: " + e.getMessage());
-                e.printStackTrace();
+
+                int numCols = (this.map.getTiles() != null && this.map.getTiles().length > 0)
+                        ? this.map.getTiles()[0].length
+                        : 0;
+                if (numCols == 0) {
+                    System.err.println("Map has no columns. Cannot place robot " + className);
+                    continue;
+                }
+                int spawnRow = encodedSpawnLocation / numCols;
+                int spawnCol = encodedSpawnLocation % numCols;
+
+                int robotSpawnX = spawnCol * Utilities.TILE_SIZE;
+                int robotSpawnY = spawnRow * Utilities.TILE_SIZE;
+                Robot robot = Utilities.createRobot(robotSpawnX, robotSpawnY, className);
+                if (robot != null) {
+                    robots.add(robot);
+                    System.out.println("Added robot: " + className + " at (" + spawnCol + "," + spawnRow + ")");
+                } else {
+                    System.err.println("Failed to create robot from class: " + className);
+                }
+
             }
+            // classLoader.close(); // Consider if/when to close
+        } catch (Exception e) {
+            System.err.println("Failed to initialize URLClassLoader for robots directory: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         // Set a preferred size for the game panel to help with layout
         setPreferredSize(new Dimension(Utilities.SCREEN_WIDTH, Utilities.SCREEN_HEIGHT));
@@ -136,8 +135,9 @@ class Game extends JPanel {
         }
 
         Point bestSpawnTile = null;
-        // Initialize to a very small number, as we are looking for the maximum of these minimum distances
-        double largestMinDistanceToNearestEntity = -1.0; 
+        // Initialize to a very small number, as we are looking for the maximum of these
+        // minimum distances
+        double largestMinDistanceToNearestEntity = -1.0;
 
         for (Point currentTile : grassLocations) {
             double tileCenterX = currentTile.x * Utilities.TILE_SIZE + Utilities.TILE_SIZE / 2.0;
@@ -154,11 +154,11 @@ class Game extends JPanel {
                     double dist = Math.hypot(tileCenterX - robotCenterX, tileCenterY - robotCenterY);
                     currentPointMinDistanceToAnEntity = Math.min(currentPointMinDistanceToAnEntity, dist);
                 }
-            } else if (this.powerUps.isEmpty()) { 
+            } else if (this.powerUps.isEmpty()) {
                 // No robots and no powerups, this case is handled earlier, but as a safeguard:
-                currentPointMinDistanceToAnEntity = Double.MAX_VALUE; // Effectively makes this point desirable if it's the only one
+                currentPointMinDistanceToAnEntity = Double.MAX_VALUE; // Effectively makes this point desirable if it's
+                                                                      // the only one
             }
-
 
             // Check distance to powerUps
             if (!this.powerUps.isEmpty()) {
@@ -170,12 +170,14 @@ class Game extends JPanel {
                     currentPointMinDistanceToAnEntity = Math.min(currentPointMinDistanceToAnEntity, dist);
                 }
             } else if (this.robots.isEmpty()) {
-                 // No powerups and no robots, this case is handled earlier, but as a safeguard:
+                // No powerups and no robots, this case is handled earlier, but as a safeguard:
                 currentPointMinDistanceToAnEntity = Double.MAX_VALUE;
             }
-            
-            // If there are no entities at all, currentPointMinDistanceToAnEntity will remain Double.MAX_VALUE.
-            // In this scenario, any grass tile is equally good. The first one processed will be chosen.
+
+            // If there are no entities at all, currentPointMinDistanceToAnEntity will
+            // remain Double.MAX_VALUE.
+            // In this scenario, any grass tile is equally good. The first one processed
+            // will be chosen.
 
             if (currentPointMinDistanceToAnEntity > largestMinDistanceToNearestEntity) {
                 largestMinDistanceToNearestEntity = currentPointMinDistanceToAnEntity;
@@ -230,13 +232,13 @@ class Game extends JPanel {
         if (powerUps != null) {
             for (PowerUp powerUp : powerUps) {
                 if (powerUp.getImage() != null) {
-                    double topLeftXWorld =  powerUp.getX();
+                    double topLeftXWorld = powerUp.getX();
                     double topLeftYWorld = powerUp.getY();
 
                     int screenX = (int) (topLeftXWorld * currentZoomFactor - currentCameraX);
                     int screenY = (int) (topLeftYWorld * currentZoomFactor - currentCameraY);
                     int scaledSize = (int) (Utilities.POWER_UP_SIZE * currentZoomFactor);
-                    
+
                     g.drawImage(powerUp.getImage(), screenX, screenY, scaledSize, scaledSize, null);
                 }
             }
@@ -261,6 +263,7 @@ class Game extends JPanel {
                         robot.think(this.robots, projectiles, this.map, this.powerUps);
                         // If think completes without exception, it's initially considered successful
                         // The timeout check below will confirm this
+                        robot.step(this);
                     } catch (Exception e) {
                         System.err
                                 .println("Exception in Robot " + robot.getName() + " think method: " + e.getMessage());
@@ -301,13 +304,11 @@ class Game extends JPanel {
                 }
 
                 // Robot.step() is final and takes Game instance
-                if (robot.isAlive()) { // Robot might have been marked unsuccessful but still needs to step
-                    robot.step(this);
-                }
+
             }
         }
-        //check for powerup colllisions
-          if (robots != null && powerUps != null && !powerUps.isEmpty()) {
+        // check for powerup colllisions
+        if (robots != null && powerUps != null && !powerUps.isEmpty()) {
             ArrayList<PowerUp> collectedPowerUps = new ArrayList<>();
             for (Robot robot : robots) {
                 if (!robot.isAlive()) {
@@ -341,16 +342,17 @@ class Game extends JPanel {
 
                     // Standard AABB collision check:
                     // Checks if the robot's bounding box overlaps with the power-up's bounding box.
-                    // This inherently considers the full extent of the power-up defined by its corners.
-                    if (robotMaxX > powerUpMinX &&    // Robot's right edge is to the right of power-up's left edge
-                        robotMinX < powerUpMaxX &&    // Robot's left edge is to the left of power-up's right edge
-                        robotMaxY > powerUpMinY &&    // Robot's bottom edge is below power-up's top edge
-                        robotMinY < powerUpMaxY) {    // Robot's top edge is above power-up's bottom edge
-                        
+                    // This inherently considers the full extent of the power-up defined by its
+                    // corners.
+                    if (robotMaxX > powerUpMinX && // Robot's right edge is to the right of power-up's left edge
+                            robotMinX < powerUpMaxX && // Robot's left edge is to the left of power-up's right edge
+                            robotMaxY > powerUpMinY && // Robot's bottom edge is below power-up's top edge
+                            robotMinY < powerUpMaxY) { // Robot's top edge is above power-up's bottom edge
+
                         robot.applyPowerUpEffect(powerUp.getType());
                         collectedPowerUps.add(powerUp);
                         // A robot picks up only one power-up per step
-                        break; 
+                        break;
                     }
                 }
             }
@@ -370,31 +372,34 @@ class Game extends JPanel {
         }
 
         // add power ups
-        if(Math.random() < Utilities.POWER_UP_SPAWN_CHANCE) {
-           int encodedSpawnLocation = smartSpawn(); // Use smartSpawn to find a location
-           if (encodedSpawnLocation != -1) {
-               int numCols = (this.map.getTiles() != null && this.map.getTiles().length > 0)
-                               ? this.map.getTiles()[0].length
-                               : 0;
-               if (numCols > 0) {
-                   int spawnRow = encodedSpawnLocation / numCols;
-                   int spawnCol = encodedSpawnLocation % numCols;
-                   // PowerUp constructor expects tile coordinates (col, row) or (xTile, yTile)
-                   // Based on PowerUp.java, it seems x and y are tile coordinates.
-                   PowerUp newPowerUp = new PowerUp((spawnCol + .5)*Utilities.TILE_SIZE -Utilities.POWER_UP_SIZE/2, (spawnRow + .5)*Utilities.TILE_SIZE - Utilities.POWER_UP_SIZE/2);
-                   powerUps.add(newPowerUp);
-                   System.out.println("Spawned PowerUp of type " + newPowerUp.getType() + " at tile (" + spawnCol + "," + spawnRow + ")");
-               } else {
-                   System.err.println("Cannot spawn power-up: Map has no columns.");
-               }
-           } else {
-               System.err.println("Cannot spawn power-up: smartSpawn failed to find a location.");
-           }
+        if (Math.random() < Utilities.POWER_UP_SPAWN_CHANCE) {
+            int encodedSpawnLocation = smartSpawn(); // Use smartSpawn to find a location
+            if (encodedSpawnLocation != -1) {
+                int numCols = (this.map.getTiles() != null && this.map.getTiles().length > 0)
+                        ? this.map.getTiles()[0].length
+                        : 0;
+                if (numCols > 0) {
+                    int spawnRow = encodedSpawnLocation / numCols;
+                    int spawnCol = encodedSpawnLocation % numCols;
+                    // PowerUp constructor expects tile coordinates (col, row) or (xTile, yTile)
+                    // Based on PowerUp.java, it seems x and y are tile coordinates.
+                    PowerUp newPowerUp = new PowerUp(
+                            (spawnCol + .5) * Utilities.TILE_SIZE - Utilities.POWER_UP_SIZE / 2,
+                            (spawnRow + .5) * Utilities.TILE_SIZE - Utilities.POWER_UP_SIZE / 2);
+                    powerUps.add(newPowerUp);
+
+                } else {
+                    System.err.println("Cannot spawn power-up: Map has no columns.");
+                }
+            } else {
+                System.err.println("Cannot spawn power-up: smartSpawn failed to find a location.");
+            }
         }
 
         duration++;
-        // System.out.println(duration + " steps taken out of " + maxDuration + " max duration.");
-        
+        // System.out.println(duration + " steps taken out of " + maxDuration + " max
+        // duration.");
+
     }
 
     public int getDuration() {
@@ -449,16 +454,30 @@ class Game extends JPanel {
         if (duration >= maxDuration) {
             int highestHealthPercentage = -1;
             Robot winner = null;
+            List<Robot> potentialWinners = new ArrayList<>();
+
             for (Robot robot : robots) {
                 if (robot.isAlive()) {
                     int healthPercentage = (int) ((robot.getHealth() / (double) robot.getMaxHealth()) * 100);
                     if (healthPercentage > highestHealthPercentage) {
                         highestHealthPercentage = healthPercentage;
-                        winner = robot;
+                        potentialWinners.clear();
+                        potentialWinners.add(robot);
+                    } else if (healthPercentage == highestHealthPercentage) {
+                        potentialWinners.add(robot);
                     }
                 }
             }
-            return winner; // Return the robot with the highest health percentage
+
+            if (highestHealthPercentage == 100 && potentialWinners.size() >= 2) {
+                return null; // More than one robot with 100% health
+            } else if (!potentialWinners.isEmpty()) {
+                // If not a tie at 100%, or a tie at less than 100%, or only one at 100%
+                // The first robot added with the highestHealthPercentage is the winner
+                // (or any if multiple have the same highest percentage < 100)
+                winner = potentialWinners.get(0);
+            }
+            return winner; // Return the robot with the highest health percentage or null
         }
         for (Robot robot : robots) {
             if (robot.isAlive()) {

@@ -6,8 +6,9 @@ package bcc.javaJostle;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class AppTest {
-    @Test public void appHasAGreeting() {
-        assertNotNull("app should have a greeting","test");
+public class Test1 {
+    @Test public void freebie() {
+        // This test is a freebie, it should always pass
+        assertTrue(true);
     }
 }

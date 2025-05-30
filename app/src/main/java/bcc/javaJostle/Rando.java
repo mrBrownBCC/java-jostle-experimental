@@ -12,19 +12,7 @@ public class Rando extends Robot{
     }
 
     public void think(ArrayList<Robot> robots, ArrayList<Projectile> projectiles, Map map, ArrayList<PowerUp> powerups) {
-        /* Implement your robot's logic here
-         For example, you can move towards the nearest robot or shoot at a target
-         to move, choose a direciton to go
-         to move left - use xMove = -1
-         to move right - use xMove = 1
-         to move up - use yMove = -1
-         to move down - use yMove = 1
-         You can ONLY move in one direction at a time, if your output doesn't match the above you will get an error
-
-         to shoot, use shootAtLocation(x, y) where x and y are the coordinates of the target
-         only shoot when canAttack() is true!
-        */
-
+      
         if(Math.random() < 0.1) {
           double r = Math.random();
             if (r < 0.25) {

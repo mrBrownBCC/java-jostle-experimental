@@ -21,7 +21,7 @@ public class MyRobot extends Robot{
 
          to shoot, use shootAtLocation(x, y) where x and y are the coordinates of the target
          only shoot when canAttack() is true!
+         make sure to check if the target is alive before shooting at it
         */
-       // System.out.println("Thinking...");
     }
 }

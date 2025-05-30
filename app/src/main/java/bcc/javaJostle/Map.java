@@ -4,6 +4,8 @@ import java.awt.Graphics;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class Map {
@@ -12,8 +14,17 @@ public class Map {
     public Map(String name) {
         // load the map from a file or resource
         ArrayList<int[]> rows = new ArrayList<>();
-        String path = "app/src/main/resources/maps/" + name + ".txt"; // Ensure this path is correct
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        // Path relative to the resources folder
+        String resourcePath = "/maps/" + name + ".txt"; 
+        InputStream inputStream = Map.class.getResourceAsStream(resourcePath);
+
+        if (inputStream == null) {
+            System.err.println("Cannot find map resource: " + resourcePath);
+            tiles = new int[0][0]; // Initialize to empty if resource not found
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] tokens = line.trim().split("\\s+");

@@ -3,19 +3,33 @@ In order to run the GUI:
 Go to the ports tab. Click "Add port" and type the number 6080.
 Follow the link to your forwarded address. This is where your GUI should be available once you run your code. Note that the GUI won't work very well until you have finished most of the code - tests will be used to make sure the intermediate steps works well. 
 
-To access the code, go to app > src > main > java
+To access the code, go to app > src > main > java > MyRobot
+
+To run the code, go to app.java and click run
 
 
 # Programming Instructions
+0. Choose your robot stats! This can be done by choosing the values in super() in the MyRobot constructor. 
+1. Implement the 'think' method inside of the MyRobot class. More details are provided in comments at that location. That's it - that's the project
+2. If you would like to add images for your robot and projectile, add these in resources/images. 
 
-General notes:
-1. Don't change any method headers. These will be correct. 
-2. For testing run the given command in the terminal. It will be of the pattern gradle ______
-3. Say hello to your (maybe) first real code editor. Autocomplete, error highlighting, and other things are about to make your life so much easier. 
-4. Apply for the student github developer pack!!
+# Robot Strategy Ideas
+
+1. Shoot where the enemy will be, not where they are
+2. Dodge bullets - you get a list of these
+3. Pathfind to powerups (use dijkstras!)
+4. Have some sort of plan for the free for all mode. 
+5. Be aggressive if winning, run away if losing
+
+# Grading
+50% - code compiles
+85% - your robot beats the rock robot on the standard map
+100% - your robot beats the random robot best 2 out of 3 on the standard map
 
 
 # Submission
+-1. Join the same group as your team on canvas. 
+0. PLEASE PLEASE PLEASE add your team name, no spaces, into name.txt at the top level directory. 
 1. Testing everything. Run the command - 
 ``` 
 gradle test
@@ -27,38 +41,4 @@ gradle test
 git add . 
 git commit -m "submitting"
 git push
-```
-
-# DELETE THIS: 
-1. Clone existing repo with desktoplite
-2. Run `gradle init --type java-application --package bcc.projectname`
-3. Select version 11 for Java (CSA version), select groovy and JUnit 4
-4. Add extension for java
-5. Add the following to build.gradle for verbose testing: 
-```
-test {
-    testLogging {
-        events "passed", "failed", "skipped"
-        exceptionFormat "full"
-        showStandardStreams = true
-    }
-}
-
-tasks.withType(Test) {
-    testLogging {
-        events "passed", "failed", "skipped"
-        exceptionFormat "full"
-        showStandardStreams = true
-    }
-}
-```
-6. For additional test files (recommended for more granular grading):
-```
-task runTestName(type: Test) {
-    description = "Runs tests in the testName class."
-    group = "verification"
-    filter {
-        includeTestsMatching "bcc.packagename.testName"
-    }
-}
 ```

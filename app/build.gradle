@@ -34,3 +34,42 @@ application {
     // Define the main class for the application.
     mainClass = 'bcc.javaJostle.App'
 }
+
+test {
+    testLogging {
+        events "passed", "failed", "skipped"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
+}
+
+tasks.withType(Test) {
+    testLogging {
+        events "passed", "failed", "skipped"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
+}
+
+task test1(type: Test) {
+    description = "Runs tests in the test1 class."
+    group = "verification"
+    filter {
+        includeTestsMatching "bcc.javaJostle.Test1"
+    }
+}
+task test2(type: Test) {
+    description = "Runs tests in the test2 class."
+    group = "verification"
+    filter {
+        includeTestsMatching "bcc.javaJostle.Test2"
+    }
+}
+
+task test3(type: Test) {
+    description = "Runs tests in the test3 class."
+    group = "verification"
+    filter {
+        includeTestsMatching "bcc.javaJostle.Test3"
+    }
+}

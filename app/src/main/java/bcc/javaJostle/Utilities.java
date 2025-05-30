@@ -36,8 +36,17 @@ public class Utilities {
 
     public static BufferedImage loadImage(String imgName) {
         try {
-            // Ensure the full path is constructed correctly
-            BufferedImage img = ImageIO.read(new File("app/src/main/resources/images/" + imgName));
+            // Path relative to the resources folder
+            String resourcePath = "/images/" + imgName;
+            java.io.InputStream inputStream = Utilities.class.getResourceAsStream(resourcePath);
+
+            if (inputStream == null) {
+                System.err.println("Cannot find image resource: " + resourcePath);
+                return null; // Return null if resource not found
+            }
+
+            BufferedImage img = ImageIO.read(inputStream);
+            inputStream.close(); // Close the stream after reading
             return cropToContent(img);
         } catch (IOException e) {
             System.err.println("Failed to load image: " + imgName + " - " + e.getMessage());
@@ -151,40 +160,68 @@ public class Utilities {
     }
 
     public static Robot createRobot(int x, int y, String className) {
-        File robotsDir = new File("app/src/main/resources/robots");
-        if (!robotsDir.exists() || !robotsDir.isDirectory()) {
-            System.err.println("Robots directory not found: " + robotsDir.getAbsolutePath());
-        }
+        // The URL for the '/robots' resource directory.
+        // This will be used if className is not "MyRobot".
+        URL robotsResourceRootUrl = Utilities.class.getResource("/robots");
+
+        // The original code had a check for 'robotsDir.exists()' here.
+        // That check is now effectively handled by verifying 'robotsResourceRootUrl == null'
+        // within the 'else' block, right before it's needed for URLClassLoader.
+
         if (className.equals("MyRobot")) {
+            // Assuming MyRobot is always on the standard classpath
             return new MyRobot(x, y);
         } else {
+            // For other robot classes, attempt to load them using URLClassLoader
+            // from the '/robots' resource directory.
+            if (robotsResourceRootUrl == null) {
+                System.err.println("Robots resource directory '/robots' not found in classpath. Cannot dynamically load: " + className);
+                // As a fallback, try to load the class directly from the classpath.
+                // This might be useful if some robots are packaged normally.
+                try {
+                    System.out.println("Fallback: Attempting to load robot class directly from classpath: bcc.javaJostle." + className);
+                    Class<?> loadedClass = Class.forName("bcc.javaJostle." + className);
+                    if (Robot.class.isAssignableFrom(loadedClass)) {
+                        Constructor<?> constructor = loadedClass.getConstructor(int.class, int.class);
+                        return (Robot) constructor.newInstance(x, y);
+                    } else {
+                        System.err.println("Class bcc.javaJostle." + className + " (loaded from classpath) does not extend Robot.");
+                        return null; // Class found but not a Robot or doesn't have the right constructor
+                    }
+                } catch (Exception directLoadException) {
+                    System.err.println("Fallback failed: Could not load bcc.javaJostle." + className + " directly from classpath: " + directLoadException.getMessage());
+                    return null; // Fallback loading failed
+                }
+            }
+
+            // If robotsResourceRootUrl is valid, proceed with URLClassLoader
             try {
-                URL[] urls = { robotsDir.toURI().toURL() };
-                URLClassLoader classLoader = new URLClassLoader(urls, Game.class.getClassLoader());
-                System.out.println("Attempting to load robot class: " + className + " at  (" + x + "," + y + ")");
+                URL[] urls = { robotsResourceRootUrl };
+                // Using Utilities.class.getClassLoader() as the parent.
+                // The original code used Game.class.getClassLoader().
+                URLClassLoader classLoader = new URLClassLoader(urls, Utilities.class.getClassLoader());
+                
+                System.out.println("Attempting to load robot class via URLClassLoader: bcc.javaJostle." + className + " from " + robotsResourceRootUrl);
+                // Assumes robot classes are in the 'bcc.javaJostle' package within the /robots directory
                 Class<?> loadedClass = classLoader.loadClass("bcc.javaJostle." + className);
 
                 if (Robot.class.isAssignableFrom(loadedClass)) {
                     Constructor<?> constructor = loadedClass.getConstructor(int.class, int.class);
                     Robot robot = (Robot) constructor.newInstance(x, y);
                     return robot;
-                    // System.out.println("Successfully loaded and instantiated: " + className);
                 } else {
-                    System.err.println("Class " + className + " does not extend Robot.");
+                    System.err.println("Class " + className + " (loaded via URLClassLoader from " + robotsResourceRootUrl + ") does not extend Robot.");
                 }
             } catch (ClassNotFoundException e) {
-                System.err.println("Robot class not found: " + className + " - " + e.getMessage());
-                return null; // Return null if the class is not found
+                System.err.println("Robot class not found via URLClassLoader: bcc.javaJostle." + className + " in " + robotsResourceRootUrl + " - " + e.getMessage());
             } catch (NoSuchMethodException e) {
-                System.err.println(
-                        "Constructor (int, int) not found for " + className + " - " + e.getMessage());
-                return null; // Return null if the constructor is not found
+                System.err.println("Constructor (int, int) not found for " + className + " (loaded via URLClassLoader from " + robotsResourceRootUrl + ") - " + e.getMessage());
             } catch (Exception e) {
-                System.err.println("Error loading or instantiating " + className + ": " + e.getMessage());
+                System.err.println("Error loading or instantiating " + className + " via URLClassLoader from " + robotsResourceRootUrl + ": " + e.getMessage());
                 e.printStackTrace();
-                return null;
             }
         }
-        return null; // Return null if the robot could not be created
+        // Return null if MyRobot was not the class, and dynamic/fallback loading failed.
+        return null;
     }
 }
