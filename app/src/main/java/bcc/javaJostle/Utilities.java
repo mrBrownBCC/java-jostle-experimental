@@ -3,6 +3,9 @@ package bcc.javaJostle;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.io.File;
 
@@ -19,6 +22,8 @@ public class Utilities {
     public final static int WALL = 0;
     public final static int GRASS = 1;
     public final static int MUD = 2;
+
+    public final static double POWER_UP_SPAWN_CHANCE = .003;
 
     public static final int SCREEN_WIDTH = 800;
     public static final int SCREEN_HEIGHT = 600;
@@ -40,15 +45,17 @@ public class Utilities {
             return null; // Return null if loading fails
         }
     }
+
     public static void loadImages() {
         // Use the loadImage method for each image
         WALL_IMAGE = loadImage("wall.png");
         GRASS_IMAGE = loadImage("grass.png");
         MUD_IMAGE = loadImage("mud.png");
         ROBOT_ERROR = loadImage("robotError.png");
-        DEFAULT_PROJECTILE_IMAGE = loadImage("defaultProjectileImage.png");
+        DEFAULT_PROJECTILE_IMAGE = loadImage("defaultProjectile.png");
 
-        // Optional: Add checks here if any image failed to load, though loadImage already prints errors
+        // Optional: Add checks here if any image failed to load, though loadImage
+        // already prints errors
         if (WALL_IMAGE == null) {
             System.err.println("WALL_IMAGE could not be loaded.");
         }
@@ -143,4 +150,41 @@ public class Utilities {
         }
     }
 
+    public static Robot createRobot(int x, int y, String className) {
+        File robotsDir = new File("app/src/main/resources/robots");
+        if (!robotsDir.exists() || !robotsDir.isDirectory()) {
+            System.err.println("Robots directory not found: " + robotsDir.getAbsolutePath());
+        }
+        if (className.equals("MyRobot")) {
+            return new MyRobot(x, y);
+        } else {
+            try {
+                URL[] urls = { robotsDir.toURI().toURL() };
+                URLClassLoader classLoader = new URLClassLoader(urls, Game.class.getClassLoader());
+                System.out.println("Attempting to load robot class: " + className + " at  (" + x + "," + y + ")");
+                Class<?> loadedClass = classLoader.loadClass("bcc.javaJostle." + className);
+
+                if (Robot.class.isAssignableFrom(loadedClass)) {
+                    Constructor<?> constructor = loadedClass.getConstructor(int.class, int.class);
+                    Robot robot = (Robot) constructor.newInstance(x, y);
+                    return robot;
+                    // System.out.println("Successfully loaded and instantiated: " + className);
+                } else {
+                    System.err.println("Class " + className + " does not extend Robot.");
+                }
+            } catch (ClassNotFoundException e) {
+                System.err.println("Robot class not found: " + className + " - " + e.getMessage());
+                return null; // Return null if the class is not found
+            } catch (NoSuchMethodException e) {
+                System.err.println(
+                        "Constructor (int, int) not found for " + className + " - " + e.getMessage());
+                return null; // Return null if the constructor is not found
+            } catch (Exception e) {
+                System.err.println("Error loading or instantiating " + className + ": " + e.getMessage());
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return null; // Return null if the robot could not be created
+    }
 }

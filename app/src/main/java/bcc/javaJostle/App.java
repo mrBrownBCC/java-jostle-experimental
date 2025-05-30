@@ -8,16 +8,9 @@ import java.util.Arrays;
 public class App {
 
     public static void main(String[] args) {
-        
-         ArrayList<String> robotOptions = new ArrayList<>(Arrays.asList("DefaultBot", "TankBot", "SpeedyBot")); // Example robot types
-
-        // Define map names
-        String[] mapNames = {"Standard", "Arena", "Maze"}; // Example map names
-
-        // Run the GameManager on the Event Dispatch Thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new GameManager(robotOptions, mapNames);
+                new GameManager();
             }
         });
     }

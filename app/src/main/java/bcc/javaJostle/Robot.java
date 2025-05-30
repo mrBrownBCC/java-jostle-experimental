@@ -1,7 +1,6 @@
 package bcc.javaJostle;
 
 import java.util.ArrayList;
-
 import java.awt.image.BufferedImage;
 
 public abstract class Robot {
@@ -10,8 +9,8 @@ public abstract class Robot {
     private int speedPoints;
     private int attackSpeedPoints;
     private int projectileStrengthPoints;
-    // attribute calculated values
 
+    // attribute calculated values
     private int health;
     private int maxHealth;
     private int speed; // This is an int
@@ -22,19 +21,30 @@ public abstract class Robot {
     private String name;
     private BufferedImage image;
     private BufferedImage projectileImage;
+    private boolean successfulThink = true;
 
     private int x;
     private int y;
 
-    protected int xMovement; // Should be -1, 0, or 1
-    protected int yMovement; // Should be -1, 0, or 1
+    protected int xMovement;
+    protected int yMovement;
     protected int xTarget;
     protected int yTarget;
     protected boolean shoot;
 
+    // Power-up effect fields
+    private static final int BOOST_DURATION_TICKS = 150;
+    private int speedBoostDuration = 0;
+    private int attackBoostDuration = 0;
+
+    private int originalSpeed;
+    private int originalProjectileSpeed;
+    private int originalProjectileDamage;
+
+
     public Robot(int x, int y, int healthPoints, int speedPoints, int attackSpeedPoints, int projectileStrengthPoints,
             String robotName, String imageName, String projectileImageName) {
-        // all values need to be from 1-5, summing to 11 in total
+        // all values need to be from 1-5, summing to 10 in total
         int sum = healthPoints + speedPoints + attackSpeedPoints + projectileStrengthPoints;
 
         if (healthPoints < 1) {
@@ -45,7 +55,7 @@ public abstract class Robot {
             throw new IllegalArgumentException("Attack speed points must be at least 1");
         } else if (projectileStrengthPoints < 1) {
             throw new IllegalArgumentException("Projectile strength points must be at least 1");
-        } else if (sum != 11) {
+        } else if (sum != 10) {
             throw new IllegalArgumentException("The sum of all points must equal 11");
         } else if (healthPoints > 5) {
             throw new IllegalArgumentException("Health points must not exceed 5");
@@ -92,6 +102,10 @@ public abstract class Robot {
         this.attackCurCooldown = attackMaxCooldown;
         this.projectileSpeed = 5 + projectileStrengthPoints; // 6 - 10
         this.projectileDamage = 10 + projectileStrengthPoints * 3; // 13 - 25
+
+        this.originalSpeed = this.speed;
+        this.originalProjectileSpeed = this.projectileSpeed;
+        this.originalProjectileDamage = this.projectileDamage;
     }
 
     public boolean canAttack() {
@@ -194,14 +208,66 @@ public abstract class Robot {
         }
         return false;
     }
+    public void applyPowerUpEffect(String type) {
+        System.out.println(this.name + " picked up " + type + " power-up!");
+        switch (type) {
+            case "health":
+                this.health += this.maxHealth / 2;
+                System.out.println(this.name + " new health: " + this.health);
+                break;
+            case "speed":
+                if (speedBoostDuration == 0) { // Only apply if not already boosted
+                    this.originalSpeed = this.speed; // Store current speed if it was somehow changed by other means
+                }
+                this.speed = this.originalSpeed * 2; // Apply boost based on original
+                this.speedBoostDuration = BOOST_DURATION_TICKS;
+                System.out.println(this.name + " new speed: " + this.speed + " for " + BOOST_DURATION_TICKS + " ticks.");
+                break;
+            case "attack":
+                if (attackBoostDuration == 0) { // Only apply if not already boosted
+                    this.originalProjectileSpeed = this.projectileSpeed;
+                    this.originalProjectileDamage = this.projectileDamage;
+                }
+                this.projectileSpeed = this.originalProjectileSpeed * 2;
+                this.projectileDamage = this.originalProjectileDamage * 2;
+                this.attackBoostDuration = BOOST_DURATION_TICKS;
+                System.out.println(this.name + " new projectile speed: " + this.projectileSpeed + ", new damage: " + this.projectileDamage + " for " + BOOST_DURATION_TICKS + " ticks.");
+                break;
+            default:
+                System.err.println("Unknown power-up type: " + type);
+                break;
+        }
+    }
 
+    private void updatePowerUpEffects() {
+        if (speedBoostDuration > 0) {
+            speedBoostDuration--;
+            if (speedBoostDuration == 0) {
+                this.speed = this.originalSpeed; // Revert to original speed
+                System.out.println(this.name + " speed boost wore off. Speed reverted to " + this.speed);
+            }
+        }
+        if (attackBoostDuration > 0) {
+            attackBoostDuration--;
+            if (attackBoostDuration == 0) {
+                this.projectileSpeed = this.originalProjectileSpeed; // Revert
+                this.projectileDamage = this.originalProjectileDamage; // Revert
+                System.out.println(this.name + " attack boost wore off. Projectile stats reverted.");
+            }
+        }
+    }
     public final void step(Game game) {// DONT CHANGE
+        if(!isAlive()) {
+            return; // If the robot is dead, do nothing
+        }
+        updatePowerUpEffects();
+
         if(Math.abs(xMovement) + Math.abs(yMovement) > 1) {
             throw new IllegalArgumentException("You can only move in one direction at a time, use xMovement and yMovement to set the direction");
         }
         // shoot
         if (shoot && canAttack()) {
-            Projectile p = new Projectile(x, y, xTarget, yTarget, projectileSpeed, projectileDamage, projectileImage,
+            Projectile p = new Projectile(x + Utilities.ROBOT_SIZE / 2 - Utilities.PROJECTILE_SIZE / 2, y + Utilities.ROBOT_SIZE / 2 - Utilities.PROJECTILE_SIZE / 2, xTarget, yTarget, projectileSpeed, projectileDamage, projectileImage,
                     this);
             game.addProjectile(p);
             attackCurCooldown = attackMaxCooldown;
@@ -295,5 +361,23 @@ public abstract class Robot {
 
     public boolean isAlive() {
         return this.health > 0;
+    }
+
+    public void setSuccessfulThink(boolean successful) {
+       
+        this.successfulThink = successful;
+    }
+
+    public boolean isSuccessfulThink() {
+        return successfulThink;
+    }
+
+    // Getters for power-up effects
+    public boolean hasSpeedBoost() {
+        return speedBoostDuration > 0;
+    }
+
+    public boolean hasAttackBoost() {
+        return attackBoostDuration > 0;
     }
 }

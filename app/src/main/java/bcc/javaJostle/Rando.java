@@ -2,14 +2,13 @@ package bcc.javaJostle;
 
 import java.util.ArrayList;
 
-public class RandomRobot extends Robot{
+public class Rando extends Robot{
     private int curXMovement = 0;
     private int curYMovement = 0;
-    public RandomRobot(int x, int y){
-        super(x, y, 3, 3, 2, 3,"bob", "randomBot.png", "defaultProjectileImage.png");
-        // Health: 3, Speed: 3, Attack Speed: 2, Projectile Strength: 3
-        // Total = 11
-        // Image name is "myRobotImage.png"
+    public Rando(int x, int y){
+        super(x, y, 3, 2, 2, 3,"Rando", "randomBot.png", "defaultProjectile.png");
+        // Health: 3, Speed: 2, Attack Speed: 2, Projectile Strength: 3
+        // Total = 10
     }
 
     public void think(ArrayList<Robot> robots, ArrayList<Projectile> projectiles, Map map, ArrayList<PowerUp> powerups) {
@@ -46,7 +45,7 @@ public class RandomRobot extends Robot{
         yMovement = curYMovement;
         if(canAttack()){
             for(Robot robot : robots) {
-                if (robot != this) {
+                if (robot != this && robot.isAlive() ){
                     shootAtLocation(robot.getX() + Utilities.ROBOT_SIZE/2, robot.getY() + Utilities.ROBOT_SIZE/2);
                     break; // Shoot at the first target found
                 }
