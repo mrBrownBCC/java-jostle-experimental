@@ -53,3 +53,4 @@ git push
 -easier way to win - simpler bot to face than random - maybe switches direction less?
 -allow for saving of different robot versions using command
 -at least 3 weeks for this project
+-more speed options
