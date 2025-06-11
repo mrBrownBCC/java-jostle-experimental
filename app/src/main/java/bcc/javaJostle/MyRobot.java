@@ -2,8 +2,9 @@ package bcc.javaJostle;
 
 import java.util.ArrayList;
 public class MyRobot extends Robot{
+    private int timer = 0;
     public MyRobot(int x, int y){
-        super(x, y, 3, 3, 2, 2,"bob", "myRobotImage.png", "defaultProjectileImage.png");
+        super(x, y, 3, 3, 2, 2,"LeftRightBot", "myRobotImage.png", "defaultProjectileImage.png");
         // Health: 3, Speed: 3, Attack Speed: 2, Projectile Strength: 2
         // Total = 10
         // Image name is "myRobotImage.png"
@@ -23,5 +24,15 @@ public class MyRobot extends Robot{
          only shoot when canAttack() is true!
          make sure to check if the target is alive before shooting at it
         */
+        timer++;
+        if(timer % 40 < 10){
+            yMovement = -1;
+        } else if(timer % 40 < 20){ 
+            xMovement = 1;
+        } else if(timer % 40 < 30){
+            yMovement = 1;
+        } else {
+            xMovement = -1;
+        }
     }
 }

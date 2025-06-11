@@ -162,11 +162,22 @@ public class Utilities {
     public static Robot createRobot(int x, int y, String className) {
         // The URL for the '/robots' resource directory.
         // This will be used if className is not "MyRobot".
-        URL robotsResourceRootUrl = Utilities.class.getResource("/robots");
+        
+        // Attempt to define robotsResourceRootUrl from a specific source directory
+        File specificSrcRobotsDir = new File("app/src/main/resources/robots"); // Path relative to project root
+        URL robotsResourceRootUrl = null;
 
-        // The original code had a check for 'robotsDir.exists()' here.
-        // That check is now effectively handled by verifying 'robotsResourceRootUrl == null'
-        // within the 'else' block, right before it's needed for URLClassLoader.
+        if (specificSrcRobotsDir.exists() && specificSrcRobotsDir.isDirectory()) {
+            try {
+                robotsResourceRootUrl = specificSrcRobotsDir.toURI().toURL();
+                // Optional: Add a log to confirm which path is being used
+                // System.out.println("Attempting to use direct src path for robots: " + robotsResourceRootUrl);
+            } catch (java.net.MalformedURLException e) {
+                System.err.println("Error creating URL for src robots directory: " + specificSrcRobotsDir.getAbsolutePath() + " - " + e.getMessage());
+                // robotsResourceRootUrl will remain null, handled by later checks
+            }
+        } 
+
 
         if (className.equals("MyRobot")) {
             // Assuming MyRobot is always on the standard classpath

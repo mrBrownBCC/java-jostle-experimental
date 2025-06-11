@@ -42,3 +42,14 @@ git add .
 git commit -m "submitting"
 git push
 ```
+
+
+# TODO FOR NEXT YEAR
+-Figure out class naming to have stuff work
+-instructions for images
+-leave in more demo robots
+-leave more helper functions for robot to use
+-better tooling - for example run 50x rounds and see win percent
+-easier way to win - simpler bot to face than random - maybe switches direction less?
+-allow for saving of different robot versions using command
+-at least 3 weeks for this project
